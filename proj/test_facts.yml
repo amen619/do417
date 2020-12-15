@@ -1,0 +1,35 @@
+- name: testing facts
+  hosts: nodes
+  #  gather_facts: false
+  tasks:
+    - name: Host = {{ ansible_facts.hostname }}
+      debug:
+        msg: |
+          FQDN is {{ ansible_facts.fqdn }}
+          Processor Count is {{ ansible_facts.processor_count }}
+
+    - name: Host = {{ ansible_facts.hostname }}
+      win_copy:
+        content: |
+          FQDN is {{ ansible_facts.fqdn }}
+          Processor Count is {{ ansible_facts.processor_count }}
+        dest: C:\Users\devops\Desktop\multi.txt
+
+    - name: Task 2
+      debug:
+        msg: >
+          This is a very very very
+          very very long line that
+          I'm typing and it will display
+          the memory amount of {{ ansible_facts.hostname }}
+          = {{ ansible_facts.memtotal_mb }}
+
+    - name: Task 2
+      win_copy:
+        content: >
+          This is a very very very
+          very very long line that
+          I'm typing and it will display
+          the memory amount of {{ ansible_facts.hostname }}
+          = {{ ansible_facts.memtotal_mb }}
+        dest: C:\Users\devops\Desktop\single.txt

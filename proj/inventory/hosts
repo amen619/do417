@@ -1,0 +1,8 @@
+monkey		ansible_hostname=win1.example.com
+
+[nodes]
+win1.example.com
+win2.example.com
+
+[dbservers]
+win2.example.com

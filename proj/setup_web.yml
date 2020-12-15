@@ -1,0 +1,31 @@
+---
+- name: Install and Start Web Service
+  hosts: win1.example.com
+  tasks:
+    - name: Setup the Web-Server feature
+      win_feature:
+        name: Web-Server
+        state: present
+
+    - name: Start the Web service
+      win_service:
+        name: W3Svc
+        state: started
+
+    - name: Check the status of the web service
+      win_service:
+        name: W3Svc
+      register: win_svc_result
+
+    - name: Display the win_service stats
+      debug:
+        var: win_svc_result
+
+- name: This is Play 2
+  hosts:
+    - win1.example.com
+    - win2.example.com
+  tasks: 
+    - name: dummy task
+      debug:
+        msg: "Hello World"

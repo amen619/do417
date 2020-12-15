@@ -1,0 +1,30 @@
+---
+- name: test variables play
+  hosts: nodes
+  gather_facts: false
+  vars:
+    age: 12
+
+#    user_name: PLAY
+  vars_files:
+    - vars/data
+#    - vars/vars_for_test.yml
+
+  tasks:
+    - name: Task 1
+      debug:
+        msg: First Task and user_name is {{ user_name }} and age is {{ age }}
+
+    - name: Include variables
+      include_vars:
+        file: vars/include_vars.yml
+
+    - name: "Task 2: {{ user_name }}"
+      vars:
+        user_name: TASK2
+      debug:
+        msg: "{{ user_name }} is the user_name. This is second task."
+
+    - name: Task 3
+      debug:
+        msg: Checking user_name = {{ user_name }}

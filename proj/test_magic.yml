@@ -1,0 +1,17 @@
+---
+- name: testing magic variables
+  hosts:
+    - nodes
+  tasks:
+    - name: Inventory Hostname
+      debug:
+        msg: inventory_hostname is {{ inventory_hostname }} and ansible_fqdn is {{ ansible_facts.fqdn }}
+      when: inventory_hostname in groups['dbservers']
+
+    - name: groups
+      debug:
+        var: groups
+
+    - name: hostvars
+      debug:
+        var: hostvars

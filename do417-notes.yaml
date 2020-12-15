@@ -71,6 +71,15 @@ SCOPE
             HOST_VARS
 
 
+HANDLERS
+========
+  RULES
+  -----
+    Handlers will only execute:
+      1. The task that notified the handler has a status of "changed"
+      2. In the order defined, and not the notified order.
+      3. Once regardless of how many times it was notified.
+      4. After ALL TASKS have completed for the PLAY. (EXCEPTION - force_handlers: true)
 
 Playbook Syntax:
 ================
@@ -78,10 +87,15 @@ Playbook Syntax:
 - name: <PLAY_NAME>
   hosts: <HOST_LIST>
   gather_facts: True|false
+  force_handlers: False|true
   vars_files: <FILE_LIST>
   vars:
     <VAR_NAME>: <VALUE>
     <VAR_NAME>: <VALUE>
+  pre_tasks:
+    - <SAME-AS-TASKS-BELOW>
+    - #ditto
+  roles:
   tasks:
     - name: <TASK_NAME>
       vars:
@@ -89,12 +103,38 @@ Playbook Syntax:
       <MODULE_NAME>:
         <MOD_OPTION>: <VALUE>
         <MOD_OPTION>: <VALUE>
+      when: <CONDITION_LIST>
+      changed_when: <CONDITION_LIST>
+      failed_when: <CONDITION_LIST>
+      loop: <CONDITION_LIST>
       register: <VARIABLE>
+      notify:
+        - <HANDLER NAME>
+        - <HANDLER NAME>
 
+    - block:
+        - name: <TASK_NAME>
+          <MODULE_NAME>.....
+        
+        - <SAME_AS_TASK_ABOVE>
+        #ditto
+      when: <CONDITION_LIST>
+      
     - name: <TASK_NAME>
       <MODULE_NAME>:
         <MOD_OPTION>: <VALUE>
         #ditto
+
+  post_tasks:
+    - <SAME-AS-TASKS-ABOVE>
+    - #ditto
+  
+  handlers:
+    - name: <HANDLER NAME>
+      <SAME_AS_TASK_ABOVE>
+    
+    #ditto
+
 
 - name: <PLAY_NAME>
   hosts: <HOST_LIST>
@@ -109,6 +149,8 @@ MODULES
 - win_shell:
 - win_reboot:
 - setup:
+- win_product_facts:
+- win_disk_facts:
 - include_vars:
     file:
 - debug:
@@ -116,9 +158,91 @@ MODULES
 - win_copy:
     content|src:
     dest:
+- win_package:                # install/remove MSI/EXE Packages
+    path: <MSI/EXE_FILE>
+    state: Present|absent
+    creates_{path|service|version}: <PATH|SERVICE|VERSION>    # used to validate if successful
+- win_updates:                # search, download and install using Windows Update Client
+    category_names: <LIST_OF_CATEGORIES>    # refer to ansible-doc
+    blacklist: <LIST_OF_KB>
+    whitelist: <LIST_OF_KB>                 # updates based of the list
+    use_scheduled_tasks: False|true         # elevate privilege
+    reboot: False|true                      # if true, async does not work
+    reboot_timeout: <SECONDS>               # default 1200
+    state: Installed|searched               # search returns a list
+- win_hotfix:
+    hotfix_kb:
+    source:
+    state:
+- win_chocolatey:             # manage package with Chocolatey(will install if not already installed)
+    name: <PACKAGE_LIST>
+    state: Present|absent|downgrade|latest|reinstall
+    proxy_url:
+    timeout: <SECONDS>          # default 2700
+    version: <SPECIFIC_VERSION> # refer to ansible-doc
 - win_feature:                # install/remove Windows Roles and Features
-    name:
+    name:                     # use Get-WindowsFeature PowerShell command to list
+    include_management_tools: False|true
     state: Present|absent
 - win_service:                # manage/query Windows Services
     name:
     state: started|stopped|restarted|paused|absent
+- win_regedit:
+    path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+    name:
+    data:
+    type: String|binary|dword|expandstring|multistring|qword
+    state: Present|absent
+- win_reg_stat:               # query registry key
+    path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+    name:
+- win_regmerge:               # merge registry with missing keys.
+    path: <REGISTRY_FILE>       # you might want to delete key first before merge.
+    compare_to: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+
+
+
+
+YAML Syntax:
+============
+  LONG              SHORT
+  ----              -----
+  store_item:       store_item: { abc, def, ghi }
+    - abc
+    - def
+    - ghi
+
+  user_list:        user_list:
+    - name: one       - { name: one, age: 1 }
+      age: 1          - { name: two, age: 2 }
+    - name: two
+      age: 2
+
+  multi line can be written as - 
+    address: |
+      1, block a,
+      Great Flat,
+      12345 MyCity, MyState,
+      My Country
+
+  single line can be written as -
+    message: > 
+      I have a very very very
+      very very very very long
+      line to type. And it looks a lot
+      better when I can type it this way.
+      It is easier to read as well.
+
+
+  instead of single very long line
+    when: ansible_facts['distribution'] == "Microsoft Windows Server 2016 Datacenter" or 
+      ansible_facts['distribution'] == "Microsoft Windows Server 2012 Datacenter"
+
+  you can make use of > and write it this way
+    when: >
+      ansible_facts['distribution'] == "Microsoft Windows Server 2016 Datacenter" or 
+      ansible_facts['distribution'] == "Microsoft Windows Server 2012 Datacenter"
+
+
+
+

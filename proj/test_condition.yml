@@ -1,0 +1,20 @@
+---
+- name: test loops
+  hosts: nodes
+  gather_facts: false
+  tasks:
+    - block:
+        - name: T1
+          debug:
+            msg: Task 1
+
+        - name: T2
+          debug:
+            msg: my_flag is {{ my_flag }}
+            
+      when: my_flag is defined
+
+    - name: T3
+      debug:
+        msg: Task 3
+      when: inventory_hostname != "win1.example.com"

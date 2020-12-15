@@ -1,0 +1,42 @@
+---
+- name: test loops
+  hosts: localhost
+  force_handlers: true
+  gather_facts: false
+  tasks:
+    - name: T1
+      debug:
+        msg: Task 1
+      changed_when: true
+      notify:
+        - handler c
+        - my handler a
+
+    - name: T2
+      debug:
+        msg: Task 2
+      #failed_when: true
+      changed_when: true
+      notify:
+        - my handler b
+
+    - name: T3
+      debug:
+        msg: Task 3
+      changed_when: true
+      notify:
+        - my handler a
+        - my handler b
+
+  handlers:
+    - name: my handler a
+      debug:
+        msg: H-a
+
+    - name: my handler b
+      debug:
+        msg: H-b
+
+    - name: handler c
+      debug:
+        msg: H-c
