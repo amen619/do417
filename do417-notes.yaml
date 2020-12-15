@@ -1,0 +1,86 @@
+Ansible
+=======
+Configuration File Locations and Precedence
+-------------------------------------------
+  1. $ANSIBLE_CONFIG              # Environment Variable
+  2. ./ansible.cfg                # current directory
+  3. ~/.ansible.cfg               # hidden file name in home directory
+  4. /etc/ansible/ansible.cfg     # Default
+
+Sample ansible.cfg config (INI)
+-------------------------------
+[defaults]
+inventory = <INVENTORY_DIR/FILE>
+remote_user = <USERNAME>
+transport = winrm                # or set the ansible_connection variable
+ask_pass = true/false
+
+
+Internal Variables
+------------------
+  ansible_connection = winrm
+  ansible_winrm_transport = basic/credssp
+  ansible_winrm_server_cert_validation = ignore
+  ansible_port = 5986
+  ansible_user = <USERNAME>
+  ansible_password = <PASSWORD>
+
+  These internal variables can be set at inventory level for individual host/groups
+  Inventory group variables are declared in <INVENTORY_DIR>/group_vars/<INVENTORY_GROUPNAME>
+  Inventory host variables are declared in <INVENTORY_DIR>/host_vars/<INVENTORY_HOSTNAME>
+
+Inventory files inside the inventory directory
+----------------------------------------------
+  INI file format (OR YAML)
+  Can use range generator operators:
+    server[1:5]   # this will generate server1 server2 server3 server4 server5
+    host[c:e]     # this will generate hostc hostd hoste
+
+CMD Line
+========
+  ansible <HOST_PATTERN> [-i <INVENTORY>] --list-hosts
+  ansible <HOST_PATTERN> -m <MODULE> [-a '<ARGUMENTS TO MODULE>']
+  ansible-doc -l|<MODULE>
+
+
+Playbook Syntax:
+================
+---                 # optional
+- name: <PLAY_NAME>
+  hosts: <HOST_LIST>
+  tasks:
+    - name: <TASK_NAME>
+      <MODULE_NAME>:
+        <MOD_OPTION>: <VALUE>
+        <MOD_OPTION>: <VALUE>
+      register: <VARIABLE>
+
+    - name: <TASK_NAME>
+      <MODULE_NAME>:
+        <MOD_OPTION>: <VALUE>
+        #ditto
+
+- name: <PLAY_NAME>
+  hosts: <HOST_LIST>
+  tasks:
+    - <SAME_AS_TASKS_ABOVE>
+...                 # optional
+
+
+MODULES
+=======
+- win_ping:
+- win_shell:
+- win_reboot:
+- setup:
+- debug:
+    var: <VARIABLE>           # OR msg: "<MESSAGE>"
+- win_copy:
+    content|src:
+    dest:
+- win_feature:                # install/remove Windows Roles and Features
+    name:
+    state: Present|absent
+- win_service:                # manage/query Windows Services
+    name:
+    state: started|stopped|restarted|paused|absent
