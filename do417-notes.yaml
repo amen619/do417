@@ -1,5 +1,9 @@
+
+https://github.com/kelvinlnx/do417.git
+
 Ansible
 =======
+
 Configuration File Locations and Precedence
 -------------------------------------------
   1. $ANSIBLE_CONFIG              # Environment Variable
@@ -28,6 +32,15 @@ Internal Variables
   These internal variables can be set at inventory level for individual host/groups
   Inventory group variables are declared in <INVENTORY_DIR>/group_vars/<INVENTORY_GROUPNAME>
   Inventory host variables are declared in <INVENTORY_DIR>/host_vars/<INVENTORY_HOSTNAME>
+    <INVENTORY_DIR>
+      - group_vars
+        - all
+        - webservers
+        - dbservers
+      - host_vars
+        - win1.example.com
+        - win2.example.com
+
 
 Inventory files inside the inventory directory
 ----------------------------------------------
@@ -41,6 +54,22 @@ CMD Line
   ansible <HOST_PATTERN> [-i <INVENTORY>] --list-hosts
   ansible <HOST_PATTERN> -m <MODULE> [-a '<ARGUMENTS TO MODULE>']
   ansible-doc -l|<MODULE>
+  ansible-playbook [-e <VAR>=<VALUE>] <PLAYBOOK>.yaml
+
+Variables
+=========
+SCOPE
+-----
+            PRIORITY              SCOPE
+  1. Global -e CMD LINE OPTION          # cmd line or ansible.cfg config
+  2. Play                               # play level
+            INCLUDE_VARS MODULE   PLAY - FROM INCLUDE TASK ONWARDS
+            TASK VARS             Task ONLY
+            PLAY VARS_FILES       PLAY
+            PLAY VARS             PLAY
+  3. Host                               # inventory variables
+            HOST_VARS
+
 
 
 Playbook Syntax:
@@ -48,8 +77,15 @@ Playbook Syntax:
 ---                 # optional
 - name: <PLAY_NAME>
   hosts: <HOST_LIST>
+  gather_facts: True|false
+  vars_files: <FILE_LIST>
+  vars:
+    <VAR_NAME>: <VALUE>
+    <VAR_NAME>: <VALUE>
   tasks:
     - name: <TASK_NAME>
+      vars:
+        <VAR_NAME>: <VALUE>
       <MODULE_NAME>:
         <MOD_OPTION>: <VALUE>
         <MOD_OPTION>: <VALUE>
@@ -73,6 +109,8 @@ MODULES
 - win_shell:
 - win_reboot:
 - setup:
+- include_vars:
+    file:
 - debug:
     var: <VARIABLE>           # OR msg: "<MESSAGE>"
 - win_copy:
