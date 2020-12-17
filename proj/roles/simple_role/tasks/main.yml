@@ -1,0 +1,7 @@
+- name: Display public variable
+  debug:
+    msg: The public_var value is '{{ public_var }}
+
+- name: Display private variable
+  debug:
+    msg: The private_var value is '{{ private_var }}'

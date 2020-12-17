@@ -1,0 +1,37 @@
+---
+- name: test roles
+  hosts: localhost
+  pre_tasks:
+    - name: Pre1
+      debug: msg="Pre1"
+#      changed_when: false
+      notify:
+        - H1
+
+  roles:
+    - { role: simple_role, public_var: "This is the first time" }
+    - { role: simple_role, public_var: "SECOND TIME" }
+    - { role: simple_role, public_var: "123" }
+#    - role: simple_role
+#      vars:
+#        public_var: first_time
+#    - role: simple_role
+#      public_var: second_time
+
+  tasks:
+    - name: T1
+      debug: msg="This is Task 1"
+#      changed_when: false
+      notify:
+        - H1
+
+  post_tasks:
+    - name: Post1
+      debug: msg="Post1"
+#      changed_when: false
+      notify:
+        - H1
+
+  handlers:
+    - name: H1
+      debug: msg="HANDLER1"

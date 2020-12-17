@@ -18,6 +18,7 @@ inventory = <INVENTORY_DIR/FILE>
 remote_user = <USERNAME>
 transport = winrm                # or set the ansible_connection variable
 ask_pass = true/false
+roles_path = <ROLES_DIR>
 
 [privilege_escalation]
 become = False/true
@@ -135,6 +136,7 @@ HANDLERS
       2. In the order defined, and not the notified order.
       3. Once regardless of how many times it was notified.
       4. After ALL TASKS have completed for the PLAY. (EXCEPTION - force_handlers: true)
+      5. In their own namespace. (You can't notify a playbooks handler from inside a role and vice versa)
 
 Playbook Syntax:
 ================
@@ -152,6 +154,10 @@ Playbook Syntax:
       - <SAME-AS-TASKS-BELOW>
       - #ditto
     roles:
+      - role: <ROLE_NAME>
+        vars:
+          <VAR_NAME>: <VALUE>
+          #ditto
     tasks:
       - name: <TASK_NAME>
         vars:
@@ -188,7 +194,7 @@ Playbook Syntax:
     post_tasks:
       - <SAME-AS-TASKS-ABOVE>
       - #ditto
-    handlers:
+    handlers:               # will execute each time after pre_tasks, tasks, post_tasks
       - name: <HANDLER NAME>
         <SAME_AS_TASK_ABOVE>
         #ditto
@@ -199,22 +205,47 @@ Playbook Syntax:
       - <SAME_AS_TASKS_ABOVE>
   ...                 # optional
 
+  - name: <IMPORT_PLAYBOOK_NAME>
+    import_playbook: <PLAYBOOK>
 
 MODULES
 =======
   - win_ping:
-  - win_shell:
   - win_reboot:
   - setup:
   - win_product_facts:
   - win_disk_facts:
+  - win_partition:
+  - win_format:
+  - win_defrag:
+  - win_hostname:
+  - win_command:
+  - win_shell:
+  - win_psexec:
+  - script:
+  - win_schedule_task:
+  - win_schedule_task_stat:
   - include_vars:
       file:
   - debug:
       var: <VARIABLE>           # OR msg: "<MESSAGE>"
+  - win_file:
+  - win_acl:
+  - win_stat:
+  - win_owner:
   - win_copy:
       content|src:
       dest:
+  - win_robocopy:
+  - win_template:
+      src:
+      dest:
+  - win_find:
+  - win_lineinfile:
+  - win_shortcut:
+  - win_file_version:
+  - win_tempfile:
+  - win_unzip:
   - win_package:                # install/remove MSI/EXE Packages
       path: <MSI/EXE_FILE>
       state: Present|absent
@@ -239,8 +270,15 @@ MODULES
       version: <SPECIFIC_VERSION> # refer to ansible-doc
   - win_feature:                # install/remove Windows Roles and Features
       name:                     # use Get-WindowsFeature PowerShell command to list
+      include_sub_features:
       include_management_tools: False|true
       state: Present|absent
+  - win_psmodule:
+  - win_iis_website:
+  - win_iis_webbinding:
+  - win_dsc:
+      resource_name:
+      name:
   - win_service:                # manage/query Windows Services
       name:
       state: started|stopped|restarted|paused|absent
@@ -291,9 +329,57 @@ MODULES
       forest_mode:
       safe_mode_password:
       sysvol_path:
-  - win_domain_user:      
+  - win_domain_user:
+      name:
+      firstname:
+      surname:
+      company:
+      password: <PLAIN_TEXT>
+      state:
+      groups:
+      street:
+      city:
+      state_province:
+      postal_code:
+      country:
+      attributes: 
       account_locked: no        # ONLY use to unlock a user account
-  - win
+  - win_domain_group:
+      name:
+      description:
+      state: Present|absent
+  - win_domain_group_membership:
+      name:
+      members:
+      state:
+  - win_domain_controller:
+      dns_domain_name:
+      domain_admin_user:
+      domain_admin_password:
+      safe_mode_password:
+      state:
+  - win_domain_membership:
+      dns_domain_name:
+      domain_admin_user:
+      domain_admin_password: <PLAIN_TEXT>
+      state: domain|workgroup|
+  - win_domain_computer:
+      name:
+      sam_account_name:
+      dns_hostname:
+      ou:
+      state:
+  - import_tasks:
+  - include_tasks:
+  - include_role:
+
+
+EXTRAS:
+=======
+Look up these topics:
+  delegate_to 
+  set_fact module
+  custom facts topic
 
 
 GARBAGE
