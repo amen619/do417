@@ -1,0 +1,19 @@
+---
+- name: test loops
+  hosts: win1.example.com
+  vars:
+    data: dir
+  tasks:
+    - name: "Execute the dir c: command"
+      win_command: C:\Windows\System32\help.exe {{ data }}
+      failed_when: false
+      changed_when: "'four-digit years' not in dir_result.stdout"
+      register: dir_result
+
+    - name: "Display result of dir c:"
+      debug:
+        var: dir_result
+
+    - name: T3
+      debug:
+        msg: Task 3

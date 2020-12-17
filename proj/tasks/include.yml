@@ -1,0 +1,14 @@
+- name: include 1
+  debug:
+    msg: B 1
+
+- name: include 2
+  debug:
+    msg: B 2 and the loop item is {{ item }} outer index is {{ my_param }}
+  loop:
+    - a
+    - b
+
+- name: include 3
+  debug:
+    msg: B 3

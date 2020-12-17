@@ -1,0 +1,58 @@
+#!/bin/bash
+
+if [ $1 == '--list' ]; then
+
+
+echo '{
+    "_meta": {
+        "hostvars": {
+            "monkey": {
+                "ansible_hostname": "win1.example.com",
+                "ansible_password": "RedHat123@!",
+                "ansible_port": 5986,
+                "ansible_winrm_server_cert_validation": "ignore",
+                "ansible_winrm_transport": "basic"
+            },
+            "win1.example.com": {
+                "ansible_password": "RedHat123@!",
+                "ansible_port": 5986,
+                "ansible_winrm_server_cert_validation": "ignore",
+                "ansible_winrm_transport": "basic",
+                "my_flag": 123,
+                "user_name": "INVENTORY_HOST"
+            },
+            "win2.example.com": {
+                "ansible_password": "RedHat123@!",
+                "ansible_port": 5986,
+                "ansible_winrm_server_cert_validation": "ignore",
+                "ansible_winrm_transport": "basic"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "dbservers",
+            "nodes",
+            "ungrouped"
+        ]
+    },
+    "dbservers": {
+        "hosts": [
+            "win2.example.com"
+        ]
+    },
+    "nodes": {
+        "hosts": [
+            "win1.example.com",
+            "win2.example.com"
+        ]
+    },
+    "ungrouped": {
+        "hosts": [
+            "monkey"
+        ]
+    }
+}
+'
+fi
+exit 0

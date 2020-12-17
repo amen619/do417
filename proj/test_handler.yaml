@@ -3,6 +3,7 @@
   hosts: localhost
   force_handlers: true
   gather_facts: false
+  #ignore_errors: true
   tasks:
     - name: T1
       debug:
@@ -15,8 +16,9 @@
     - name: T2
       debug:
         msg: Task 2
-      #failed_when: true
+      failed_when: true
       changed_when: true
+      ignore_errors: true
       notify:
         - my handler b
 
@@ -24,6 +26,7 @@
       debug:
         msg: Task 3
       changed_when: true
+      #failed_when: true
       notify:
         - my handler a
         - my handler b

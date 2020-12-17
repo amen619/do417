@@ -1,4 +1,4 @@
-monkey		ansible_hostname=win1.example.com
+monkey		ansible_host=win1.example.com
 
 [nodes]
 win1.example.com

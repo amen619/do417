@@ -1,0 +1,31 @@
+---
+- name: test loops
+  hosts: nodes
+  tasks:
+    - name: T1
+      debug:
+        msg: |
+          [defaults]
+          name = {{ ansible_facts['fqdn'] }}
+          interfaces = {{ ansible_facts['interfaces'] }}
+
+          #    - name: T2
+          #      copy:
+          #        content: |
+          #          [defaults]
+          #          name = {{ ansible_facts['fqdn'] }}
+          #          interfaces = {{ ansible_facts['interfaces'] }}
+          #        dest: C:\data.ini
+
+    - name: T3
+      win_template:
+        src: template/data.j2
+        dest: C:\data.txt
+
+    - name: run command to display content
+      win_shell: type C:\data.txt
+      register: sh_result
+
+    - name: display content
+      debug:
+        var: sh_result

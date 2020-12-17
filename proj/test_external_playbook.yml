@@ -1,0 +1,19 @@
+---
+- name: Play 1
+  hosts: win1.example.com
+  gather_facts: false
+  tasks:
+    - name: T1
+      debug:
+        msg: Task 1
+
+    - name: T2
+      debug:
+        msg: Task 2
+
+    - name: T3
+      debug:
+        msg: Task 3
+
+- name: import playbook
+  import_playbook: ./test_external_task.yml

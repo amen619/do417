@@ -1,0 +1,23 @@
+---
+- name: test external files
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: T1
+      debug:
+        msg: Task 1
+
+    - name: Import Tasks
+      import_tasks: tasks/import.yml
+
+    - name: Include Tasks
+      include_tasks: tasks/include.yml
+      loop_control:
+        loop_var: my_param
+      loop:
+        - outer1
+        - outer2
+
+    - name: T4
+      debug:
+        msg: Task 4

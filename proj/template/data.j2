@@ -1,0 +1,9 @@
+[defaults]
+name = {{ ansible_facts['fqdn'] }}
+interfaces = {{ ansible_facts['interfaces'] }}
+
+
+{% if inventory_hostname == "win1.example.com" %}
+YAY. Greatest machine
+{% endif %}
+

@@ -1,0 +1,36 @@
+---
+- name: test loops
+  hosts: localhost
+  vars:
+    just_do_it: false
+  tasks:
+    - name: T1
+      debug:
+        msg: Task 1
+
+    - block:
+        - name: T2a
+          debug:
+            msg: Task 2a
+          failed_when: true
+
+        - name: T2b
+          debug:
+            msg: Task 2b
+      rescue:
+        - name: R2a
+          debug:
+            msg: Rescue 2a
+
+        - name: R2b
+          debug:
+            msg: Rescue 2b
+      always:
+        - name: A2
+          debug:
+            msg: Always 2
+      when: just_do_it
+
+    - name: T3
+      debug:
+        msg: Task 3

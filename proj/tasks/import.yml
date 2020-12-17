@@ -1,0 +1,11 @@
+- name: import 1
+  debug:
+    msg: A 1
+
+- name: import 2
+  debug:
+    msg: A 2
+
+- name: import 3
+  debug:
+    msg: A 3

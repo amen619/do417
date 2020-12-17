@@ -19,6 +19,11 @@ remote_user = <USERNAME>
 transport = winrm                # or set the ansible_connection variable
 ask_pass = true/false
 
+[privilege_escalation]
+become = False/true
+become_method = su/sudo/runas
+become_user = <USERNAME>
+become_ask_pass = false/true
 
 Internal Variables
 ------------------
@@ -49,157 +54,9 @@ Inventory files inside the inventory directory
     server[1:5]   # this will generate server1 server2 server3 server4 server5
     host[c:e]     # this will generate hostc hostd hoste
 
-CMD Line
-========
-  ansible <HOST_PATTERN> [-i <INVENTORY>] --list-hosts
-  ansible <HOST_PATTERN> -m <MODULE> [-a '<ARGUMENTS TO MODULE>']
-  ansible-doc -l|<MODULE>
-  ansible-playbook [-e <VAR>=<VALUE>] <PLAYBOOK>.yaml
-
-Variables
-=========
-SCOPE
------
-            PRIORITY              SCOPE
-  1. Global -e CMD LINE OPTION          # cmd line or ansible.cfg config
-  2. Play                               # play level
-            INCLUDE_VARS MODULE   PLAY - FROM INCLUDE TASK ONWARDS
-            TASK VARS             Task ONLY
-            PLAY VARS_FILES       PLAY
-            PLAY VARS             PLAY
-  3. Host                               # inventory variables
-            HOST_VARS
-
-
-HANDLERS
-========
-  RULES
-  -----
-    Handlers will only execute:
-      1. The task that notified the handler has a status of "changed"
-      2. In the order defined, and not the notified order.
-      3. Once regardless of how many times it was notified.
-      4. After ALL TASKS have completed for the PLAY. (EXCEPTION - force_handlers: true)
-
-Playbook Syntax:
-================
----                 # optional
-- name: <PLAY_NAME>
-  hosts: <HOST_LIST>
-  gather_facts: True|false
-  force_handlers: False|true
-  vars_files: <FILE_LIST>
-  vars:
-    <VAR_NAME>: <VALUE>
-    <VAR_NAME>: <VALUE>
-  pre_tasks:
-    - <SAME-AS-TASKS-BELOW>
-    - #ditto
-  roles:
-  tasks:
-    - name: <TASK_NAME>
-      vars:
-        <VAR_NAME>: <VALUE>
-      <MODULE_NAME>:
-        <MOD_OPTION>: <VALUE>
-        <MOD_OPTION>: <VALUE>
-      when: <CONDITION_LIST>
-      changed_when: <CONDITION_LIST>
-      failed_when: <CONDITION_LIST>
-      loop: <CONDITION_LIST>
-      register: <VARIABLE>
-      notify:
-        - <HANDLER NAME>
-        - <HANDLER NAME>
-
-    - block:
-        - name: <TASK_NAME>
-          <MODULE_NAME>.....
-        
-        - <SAME_AS_TASK_ABOVE>
-        #ditto
-      when: <CONDITION_LIST>
-      
-    - name: <TASK_NAME>
-      <MODULE_NAME>:
-        <MOD_OPTION>: <VALUE>
-        #ditto
-
-  post_tasks:
-    - <SAME-AS-TASKS-ABOVE>
-    - #ditto
-  
-  handlers:
-    - name: <HANDLER NAME>
-      <SAME_AS_TASK_ABOVE>
-    
-    #ditto
-
-
-- name: <PLAY_NAME>
-  hosts: <HOST_LIST>
-  tasks:
-    - <SAME_AS_TASKS_ABOVE>
-...                 # optional
-
-
-MODULES
-=======
-- win_ping:
-- win_shell:
-- win_reboot:
-- setup:
-- win_product_facts:
-- win_disk_facts:
-- include_vars:
-    file:
-- debug:
-    var: <VARIABLE>           # OR msg: "<MESSAGE>"
-- win_copy:
-    content|src:
-    dest:
-- win_package:                # install/remove MSI/EXE Packages
-    path: <MSI/EXE_FILE>
-    state: Present|absent
-    creates_{path|service|version}: <PATH|SERVICE|VERSION>    # used to validate if successful
-- win_updates:                # search, download and install using Windows Update Client
-    category_names: <LIST_OF_CATEGORIES>    # refer to ansible-doc
-    blacklist: <LIST_OF_KB>
-    whitelist: <LIST_OF_KB>                 # updates based of the list
-    use_scheduled_tasks: False|true         # elevate privilege
-    reboot: False|true                      # if true, async does not work
-    reboot_timeout: <SECONDS>               # default 1200
-    state: Installed|searched               # search returns a list
-- win_hotfix:
-    hotfix_kb:
-    source:
-    state:
-- win_chocolatey:             # manage package with Chocolatey(will install if not already installed)
-    name: <PACKAGE_LIST>
-    state: Present|absent|downgrade|latest|reinstall
-    proxy_url:
-    timeout: <SECONDS>          # default 2700
-    version: <SPECIFIC_VERSION> # refer to ansible-doc
-- win_feature:                # install/remove Windows Roles and Features
-    name:                     # use Get-WindowsFeature PowerShell command to list
-    include_management_tools: False|true
-    state: Present|absent
-- win_service:                # manage/query Windows Services
-    name:
-    state: started|stopped|restarted|paused|absent
-- win_regedit:
-    path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
-    name:
-    data:
-    type: String|binary|dword|expandstring|multistring|qword
-    state: Present|absent
-- win_reg_stat:               # query registry key
-    path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
-    name:
-- win_regmerge:               # merge registry with missing keys.
-    path: <REGISTRY_FILE>       # you might want to delete key first before merge.
-    compare_to: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
-
+  Use a custom name to refer to an existing host in your dc
+    mr.troublemaker   ansible_host=server3.example.com
+  assign the custom_name with the internal variable ansible_host that points to the actual hostname.
 
 
 
@@ -246,3 +103,232 @@ YAML Syntax:
 
 
 
+
+CMD Line
+========
+  ansible <HOST_PATTERN> [-i <INVENTORY>] --list-hosts
+  ansible <HOST_PATTERN> -m <MODULE> [-a '<ARGUMENTS TO MODULE>']
+  ansible-doc -l|<MODULE>
+  ansible-playbook [-e <VAR>=<VALUE>] [--syntax-check] <PLAYBOOK>.yaml
+
+Variables
+=========
+  SCOPE
+  -----
+              PRIORITY              SCOPE
+    1. Global -e CMD LINE OPTION          # cmd line or ansible.cfg config
+    2. Play                               # play level
+              INCLUDE_VARS MODULE   PLAY - FROM INCLUDE TASK ONWARDS
+              TASK VARS             Task ONLY
+              PLAY VARS_FILES       PLAY
+              PLAY VARS             PLAY
+    3. Host                               # inventory variables
+              HOST_VARS
+
+
+HANDLERS
+========
+  RULES
+  -----
+    Handlers will only execute:
+      1. The task that notified the handler has a status of "changed"
+      2. In the order defined, and not the notified order.
+      3. Once regardless of how many times it was notified.
+      4. After ALL TASKS have completed for the PLAY. (EXCEPTION - force_handlers: true)
+
+Playbook Syntax:
+================
+  ---                 # optional
+  - name: <PLAY_NAME>
+    hosts: <HOST_LIST>
+    gather_facts: True|false
+    force_handlers: False|true
+    ignore_errors: False|true
+    vars_files: <FILE_LIST>
+    vars:
+      <VAR_NAME>: <VALUE>
+      <VAR_NAME>: <VALUE>
+    pre_tasks:
+      - <SAME-AS-TASKS-BELOW>
+      - #ditto
+    roles:
+    tasks:
+      - name: <TASK_NAME>
+        vars:
+          <VAR_NAME>: <VALUE>
+        <MODULE_NAME>:
+          <MOD_OPTION>: <VALUE>
+          <MOD_OPTION>: <VALUE>
+        when: <CONDITION_LIST>
+        changed_when: <CONDITION_LIST>
+        failed_when: <CONDITION_LIST>
+        ignore_errors: False|true
+        loop: <CONDITION_LIST>
+        register: <VARIABLE>
+        notify:
+          - <HANDLER NAME>
+          - <HANDLER NAME>
+
+      - block:
+          - name: <TASK_NAME>
+            <MODULE_NAME>.....
+          
+          - <SAME_AS_TASK_ABOVE>
+          #ditto
+        rescue:
+          - <SAME_AS_TASK_ABOVE>
+        always:
+          - <SAME_AS_TASK_ABOVE>
+        when: <CONDITION_LIST>
+        
+      - name: <TASK_NAME>
+        <MODULE_NAME>:
+          <MOD_OPTION>: <VALUE>
+          #ditto
+    post_tasks:
+      - <SAME-AS-TASKS-ABOVE>
+      - #ditto
+    handlers:
+      - name: <HANDLER NAME>
+        <SAME_AS_TASK_ABOVE>
+        #ditto
+
+  - name: <PLAY_NAME>
+    hosts: <HOST_LIST>
+    tasks:
+      - <SAME_AS_TASKS_ABOVE>
+  ...                 # optional
+
+
+MODULES
+=======
+  - win_ping:
+  - win_shell:
+  - win_reboot:
+  - setup:
+  - win_product_facts:
+  - win_disk_facts:
+  - include_vars:
+      file:
+  - debug:
+      var: <VARIABLE>           # OR msg: "<MESSAGE>"
+  - win_copy:
+      content|src:
+      dest:
+  - win_package:                # install/remove MSI/EXE Packages
+      path: <MSI/EXE_FILE>
+      state: Present|absent
+      creates_{path|service|version}: <PATH|SERVICE|VERSION>    # used to validate if successful
+  - win_updates:                # search, download and install using Windows Update Client
+      category_names: <LIST_OF_CATEGORIES>    # refer to ansible-doc
+      blacklist: <LIST_OF_KB>
+      whitelist: <LIST_OF_KB>                 # updates based of the list
+      use_scheduled_tasks: False|true         # elevate privilege
+      reboot: False|true                      # if true, async does not work
+      reboot_timeout: <SECONDS>               # default 1200
+      state: Installed|searched               # search returns a list
+  - win_hotfix:
+      hotfix_kb:
+      source:
+      state:
+  - win_chocolatey:             # manage package with Chocolatey(will install if not already installed)
+      name: <PACKAGE_LIST>
+      state: Present|absent|downgrade|latest|reinstall
+      proxy_url:
+      timeout: <SECONDS>          # default 2700
+      version: <SPECIFIC_VERSION> # refer to ansible-doc
+  - win_feature:                # install/remove Windows Roles and Features
+      name:                     # use Get-WindowsFeature PowerShell command to list
+      include_management_tools: False|true
+      state: Present|absent
+  - win_service:                # manage/query Windows Services
+      name:
+      state: started|stopped|restarted|paused|absent
+  - win_regedit:
+      path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+      name:
+      data:
+      type: String|binary|dword|expandstring|multistring|qword
+      state: Present|absent
+  - win_reg_stat:               # query registry key
+      path: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+      name:
+  - win_regmerge:               # merge registry with missing keys.
+      path: <REGISTRY_FILE>       # you might want to delete key first before merge.
+      compare_to: {HKCC|HKLM|HKCU|HKCR|HKU}:<PATH>
+  - win_user:                   # manage local Windows users accounts
+      name:
+      password: <PLAIN_TEXT>
+      state: Present|absent|query
+      groups: <GROUP_LIST>
+      groups_action: Replace|add|remove
+      account_disable: yes|no
+      account_locked: no
+      description:
+      fullname:
+      password_expired: yes|no
+      password_never_expires: yes|no
+      update_password: Always|on_create
+      user_cannot_change_password: yes|no
+  - win_user_profile:
+      username:         # use this for valid user account (SID)
+      name:             # the base name for the profile path. use this to delete profile of a deleted account.
+      state: Present|absent
+      remove_multiple: False|true
+  - win_group:
+      name:
+      state:
+  - win_group_membership:
+      name:
+      members: <USER_LIST>
+      state:
+  - win_domain:         # manages Windows Active Directory
+      create_dns_delegation:
+      database_path:
+      dns_domain_name:
+      domain_mode:
+      domain_netbios_name:
+      forest_mode:
+      safe_mode_password:
+      sysvol_path:
+  - win_domain_user:      
+      account_locked: no        # ONLY use to unlock a user account
+  - win
+
+
+GARBAGE
+=======
+
+- name: get file stat
+  win_stat:
+    path: C:\My Application\My Dir\fileX.abcd
+  register: stat_result
+
+- name: do something
+  debug:
+    msg: the path variable exists and it is a directory
+  when:
+    - stat_result.stat.exists
+    - stat_result.stat.isdir
+
+
+- name: another playbook
+  var:
+    abc:
+      - def: abc
+        one: two
+      - second: item
+        one: three
+    my_data: "{{ my_variable | default('123') }}"
+  tasks:
+    - name: anything
+      vars: 
+        my_item: |
+          {% if inventory_hostname == 'abc' %}
+          this is the first item
+          {% else %}
+          this is not the first item
+          {% endif %}
+      win_copy:
+        content: "{{ abc|to_yaml }}"
+        dest: C:\somewhere\myfile.dat
